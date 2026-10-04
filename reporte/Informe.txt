@@ -1,0 +1,184 @@
+﻿UNIVERSIDAD BOLIVIANA DE INFORMATICA 
+SUBSEDE CIUDAD DE LA PAZ 
+CARRERA DE INGENIERIA DE SISTEMAS 
+
+
+
+
+SIMULACION
+
+Modelo M/M/1 aplicado a la atención de pacientes en una clínica
+
+
+
+
+
+Nombre:
+
+Neizza Simona Barra Cuellar 
+
+Docente: 
+
+	Ing. Andres Grover Albino Chambi
+
+
+La Paz – Bolivia 
+2026
+
+
+1. Formulación del problema
+1.1 Sistema real observado
+Clínica de barrio que cuenta con un único módulo de admisión y atención de pacientes. Los pacientes llegan de forma aleatoria y son atendidos por un solo servidor bajo disciplina FIFO (primero en llegar, primero en ser atendido).
+1.2 Entidad principal
+Pacientes que llegan al módulo de atención de la clínica.
+1.3 Variables identificadas
+    • Tiempo entre llegadas de pacientes (min)
+    • Tiempo de servicio o atención (min)
+    • Número de pacientes en el sistema
+    • Tiempo de espera en cola
+1.4 Objetivo
+Evaluar el desempeño del sistema de atención, determinando si existe congestión y cuánto tiempo promedio permanece un paciente en la clínica.
+1.5 Supuestos del modelo
+    • Llegadas aleatorias con distribución exponencial (proceso Poisson)
+    • Tiempos de servicio con distribución exponencial
+    • Atención individual
+    • Disciplina de cola FIFO
+    • Un solo servidor
+    • Cola infinita
+Modelo identificado: M/M/1
+2. Generación de datos y metodología
+Los datos fueron simulados con Python 3 usando la librería numpy, con semilla reproducible 2026. Se generaron 40 pacientes con:
+Parámetro de simulación	Valor
+Semilla	2026
+Número de pacientes	40
+Media entre llegadas	8.0 min
+Media de servicio	6.0 min
+Distribución	Exponencial
+El archivo resultante (clinica_datos.csv) contiene 3 columnas:
+    • id_paciente
+    • tiempo_entre_llegadas_min
+    • tiempo_servicio_min
+3. Resultados estadísticos (Excel)
+Métrica	Valor
+Media de tiempos entre llegadas	8.2088 min
+Media de tiempos de servicio	7.1688 min
+Desviación estándar llegadas	6.4215
+Desviación estándar servicio	6.1992
+Tasa de llegada estimada λ	0.1218 pacientes/min
+Tasa de servicio estimada μ	0.1395 pacientes/min
+Utilización ρ = λ/μ	0.8733
+4. Resultados del modelo M/M/1 (Python)
+Medida de desempeño	Valor	Interpretación
+λ (tasa de llegada)	0.1218 pac/min	Llega ~1 paciente cada 8.2 min
+μ (tasa de servicio)	0.1395 pac/min	Se atiende ~1 paciente cada 7.2 min
+ρ (utilización)	0.8733	87.33% del tiempo el servidor está ocupado
+L (pacientes en sistema)	6.8930	En promedio hay ~7 pacientes en el sistema
+Lq (pacientes en cola)	6.0197	En promedio hay ~6 pacientes esperando
+W (tiempo en sistema)	56.5832 min	Un paciente tarda ~57 min en total
+Wq (tiempo en cola)	49.4144 min	Un paciente espera ~49 min antes de ser atendido
+P0 (probabilidad sistema vacío)	0.1267	Solo el 12.67% del tiempo no hay pacientes
+5. Detección de valores atípicos (Z-Score)
+Se aplicó el criterio Z-Score: Z = (x − media) / desviación
+Criterios utilizados:
+    • |Z| > 3 → outlier fuerte
+    • 2.5 < |Z| ≤ 3 → outlier moderado
+Categoría	Cantidad
+Outliers fuertes en llegadas	0
+Outliers fuertes en servicio	0
+Outliers moderados en llegadas	1
+Outliers moderados en servicio	1
+Conclusión: Los datos presentan estabilidad estadística, sin valores extremos severos. Solo se detectó un valor moderadamente atípico en cada variable, probablemente producto de la aleatoriedad de la simulación exponencial, pero sin afectar la confiabilidad del análisis.
+6. Preguntas de análisis
+    • ¿Qué porcentaje de pacientes espera más de 30 minutos en cola?
+Con Wq = 49.41 min de espera promedio, la mayoría de los pacientes supera los 30 min de espera. El sistema está altamente congestionado.
+    • ¿Existen valores atípicos según Z-Score?
+Sí, pero solo moderados (1 en llegadas y 1 en servicio). No hay outliers fuertes.
+    • ¿El proceso está centrado?
+La media de llegadas (8.21) y la media de servicio (7.17) están muy cercanas, lo que hace que ρ = 0.8733 sea elevado, indicando un sistema casi saturado.
+    • ¿El sistema es estable?
+Sí, porque ρ < 1. Pero está muy cerca del límite (ρ = 0.87), lo que genera alta congestión.
+7. Decisión de calidad
+Con base en los resultados obtenidos:
+    • ρ = 0.8733 → el sistema está muy congestionado (por encima del 80%, umbral crítico).
+    • Wq = 49.41 min → el tiempo promedio de espera es casi una hora, lo cual es inaceptable para un servicio de salud.
+    • Lq = 6.02 → en promedio hay 6 pacientes esperando en todo momento.
+    • P0 = 0.1267 → solo el 13% del tiempo el módulo está libre.
+Decisión:
+El sistema NO cumple con niveles aceptables de servicio. Se recomienda:
+    1. Abrir un segundo módulo de atención para reducir ρ a ~0.44 y bajar Wq drásticamente.
+    2. Optimizar el tiempo de servicio (por ejemplo, con personal de apoyo o digitalización de admisión).
+    3. Implementar un sistema de turnos para distribuir llegadas y reducir picos.
+Conclusiones
+    • Se formuló correctamente el problema como un sistema de colas M/M/1 con un solo servidor.
+    • Los datos simulados presentan estabilidad estadística (sin outliers fuertes).
+    • El sistema está altamente congestionado (ρ = 0.8733) y presenta tiempos de espera elevados (Wq ≈ 49 min).
+    • Se recomienda ampliar la capacidad del servicio para mejorar la calidad de atención al paciente.
+    • El modelo M/M/1 permitió cuantificar el desempeño del sistema y respaldar la toma de decisiones.
+
+Anexos
+Genera_datos_clinica.py (script de simulación)
+import numpy as np
+import pandas as pd
+# Generación aleatoria
+rng = np.random.default_rng(2026)
+# Tiempo medio entre llegadas: 8 minutos
+# Tiempo medio de servicio: 6 minutos
+tiempos_entre_llegadas = rng.exponential(scale=8.0, size=40)
+tiempos_servicio = rng.exponential(scale=6.0, size=40)
+# Armado de datos para ser exportado a formato CSV
+df = pd.DataFrame({
+"id_paciente": np.arange(1, 41),
+"tiempo_entre_llegadas_min": tiempos_entre_llegadas.round(2),
+"tiempo_servicio_min": tiempos_servicio.round(2)
+})
+# Archivo de salida
+df.to_csv("clinica_datos.csv", index=False, decimal=",", sep=";")
+print("Archivo 'clinica_datos.csv' generado correctamente.")
+
+Modelo_atencion_clinica.py (script del modelo M/M/1
+      import pandas as pd
+from scipy import stats
+import numpy as np
+
+# Uso del archivo .csv generado anteriormente
+df = pd.read_csv("clinica_datos.csv", decimal=",", sep=";")
+
+# Lectura de datos desde el archivo .csv
+llegadas = df["tiempo_entre_llegadas_min"]
+servicio = df["tiempo_servicio_min"]
+
+# Cálculo de tiempo de llegadas y tiempo de servicios
+media_llegadas = llegadas.mean()
+media_servicio = servicio.mean()
+
+# Promedios de atención y servicios
+Lambda_ = 1 / media_llegadas
+mu = 1 / media_servicio
+
+# Utilización
+rho = Lambda_ / mu
+
+# Medidas de desempeño M/M/1
+L = Lambda_ / (mu - Lambda_)
+Lq = (Lambda_ ** 2) / (mu * (mu - Lambda_))
+W = 1 / (mu - Lambda_)
+Wq = Lambda_ / (mu * (mu - Lambda_))
+P0 = 1 - rho
+
+# Salida por pantalla
+print("== Modelo M/M/1 - Clínica ==")
+print(f"lambda: {Lambda_:.4f} pacientes/min")
+print(f"mu: {mu:.4f} pacientes/min")
+print(f"rho: {rho:.4f}")
+print(f"numero promedio en sistema L: {L:.4f}")
+print(f"numero promedio en cola Lq: {Lq:.4f}")
+print(f"tiempo promedio en sistema W: {W:.4f} min")
+print(f"tiempo promedio en cola Wq: {Wq:.4f} min")
+print(f"Probabilidad de sistema vacio P0: {P0:.4f}")
+
+Hoja de cálculo con métricas y Z-Score
+
+
+
+
+
